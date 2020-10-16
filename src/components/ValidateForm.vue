@@ -13,23 +13,29 @@
 /* eslint-disable */ 
 import { defineComponent, onUnmounted } from 'vue'
 import mitt from 'mitt'
+type ValidateFunc = () => boolean
 export const emitter = mitt()
 export default defineComponent({
   emits:['form-submit'],
   setup(props,context){
+    let funcArr:  ValidateFunc[] = []
     const submitForm = () => {
-      context.emit('form-submit',true)
+      const result = funcArr.map(func => func()).every(result => result)
+      context.emit('form-submit', result)
     }
-    const callbcak = (test:any) => {
-      console.log(test)
+    const callback = (func?: ValidateFunc) => {
+      if (func) {
+        funcArr.push(func)
+      }
     }
-    emitter.on('form-item-created', callbcak)
+    emitter.on('form-item-created', callback)
     onUnmounted(() => {
-      emitter.off('form-item-created', callbcak)
+      emitter.off('form-item-created', callback)
+      funcArr = []
     })
     return {
       submitForm,
-      callbcak
+      callback
     }
   }
 })

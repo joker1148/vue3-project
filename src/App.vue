@@ -10,7 +10,7 @@
        </div>
       <div class="mb-3">
         <label for="exampleInputPassword1" class="form-label">密码</label>
-        <validate-input :rules="emailRules" v-model="emailVal" placeholder="请输入密码" type="password"></validate-input>
+        <validate-input :rules="passwordRules" v-model="emailVal" placeholder="请输入密码" type="password"></validate-input>
       </div>
       <template #submit>
         <span class="btn btn-danger">Submit</span>
@@ -71,8 +71,11 @@ export default defineComponent({
     const inputRef = ref<any>()
     const emailVal = ref('viking@qq.com')
     const passwordVal = ref('123')
+    const passwordRules: RulesProp = [
+      { type: 'required', message: '密码不能为空' }
+    ]
     const emailRules: RulesProp = [
-      { type: 'required', message: '不能为空'},
+      { type: 'required', message: '邮箱不能为空'},
       { type: 'email', message: 'real email'},
     ]
     const emailRef = reactive({
@@ -104,7 +107,8 @@ export default defineComponent({
       emailVal,
       onFormSubmit,
       inputRef,
-      passwordVal
+      passwordVal,
+      passwordRules
     }
   }
 })
