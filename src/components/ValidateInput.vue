@@ -1,41 +1,53 @@
 <template>
   <div class="validate-input-container pb-3">
     <input type="text" class="form-control"
+    v-if="tag !== 'textarea'"
     :value="inputRef.val"
     @blur="validateInput"
     @input="updateValue"
     v-bind="$attrs"
     :class="{'is-invalid':inputRef.error}">
+    <textarea  class="form-control"
+    v-else
+    :value="inputRef.val"
+    @blur="validateInput"
+    @input="updateValue"
+    v-bind="$attrs"
+    :class="{'is-invalid':inputRef.error}" />
     <span v-if="inputRef.error" class="invalid-feedback">{{inputRef.message}}</span>
   </div>
 </template>
 
 <script lang="ts">
-/* eslint-disable */ 
-import { defineComponent, reactive, PropType,onMounted } from 'vue'
+import { defineComponent, reactive, PropType, onMounted } from 'vue'
 import { emitter } from './ValidateForm.vue'
 const emailReg = /^[a-zA-Z0-9.!#$%&’*+!=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/
 interface RuleProp {
   type: 'required' | 'email';
-  message: string
+  message: string;
 }
 export type RulesProp = RuleProp[]
-export default defineComponent ({
+export type TagType = 'input' | 'textarea'
+export default defineComponent({
   props: {
     modelValue: String,
-    rules: Array as PropType<RulesProp>
+    rules: Array as PropType<RulesProp>,
+    tag: {
+      type: String as PropType<TagType>,
+      default: 'input'
+    }
   },
   inheritAttrs: false,
-  setup(props,ctx){
+  setup (props, ctx) {
     const inputRef = reactive({
       val: props.modelValue || '',
       error: false,
       message: ''
     })
-    const updateValue = (e:KeyboardEvent)=>{
+    const updateValue = (e: KeyboardEvent) => {
       const targetValue = (e.target as HTMLInputElement).value
       inputRef.val = targetValue
-      ctx.emit('update:modelValue',targetValue)
+      ctx.emit('update:modelValue', targetValue)
     }
     const validateInput = () => {
       if (props.rules) {
@@ -59,7 +71,7 @@ export default defineComponent ({
       }
       return true
     }
-    onMounted(()=>{
+    onMounted(() => {
       emitter.emit('form-item-created', validateInput)
     })
     return {
