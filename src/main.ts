@@ -7,8 +7,13 @@ import App from './App.vue'
 // console.log(store.state.count)
 // store.commit('add')
 // console.log(store.state.count)
-axios.get('http://api.vikingship.xyz/api/columns').then(resp => {
-  console.log(resp)
+axios.defaults.baseURL = 'http://apis.imooc.com/api/'
+axios.interceptors.request.use(config => {
+  config.params = { ...config.params, icode: '898F8DC30015CE9F' }
+  return config
+})
+axios.get('/columns', { params: { key: 'hello' } }).then(resp => {
+  console.log(resp.data)
 })
 
 const app = createApp(App)
