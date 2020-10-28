@@ -10,7 +10,9 @@ import App from './App.vue'
 axios.defaults.baseURL = 'http://apis.imooc.com/api/'
 axios.interceptors.request.use(config => {
   config.params = { ...config.params, icode: '898F8DC30015CE9F' }
+  config.data = { ...config.data, icode: '898F8DC30015CE9F' }
   store.commit('setLoading', true)
+  store.commit('setError', { status: false, message: '' })
   return config
 })
 // axios.get('/columns', { params: { key: 'hello' } }).then(resp => {
@@ -21,6 +23,13 @@ axios.interceptors.response.use(config => {
     store.commit('setLoading', false)
   }, 5000)
   return config
+}, e => {
+  console.log(e.response)
+  const { error } = e.response.data
+  console.log(error)
+  store.commit('setError', { status: true, message: error })
+  store.commit('setLoading', false)
+  return Promise.reject(error)
 })
 const app = createApp(App)
 app.use(router)
