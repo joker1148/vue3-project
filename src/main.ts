@@ -9,9 +9,15 @@ import App from './App.vue'
 // console.log(store.state.count)
 axios.defaults.baseURL = 'http://apis.imooc.com/api/'
 axios.interceptors.request.use(config => {
-  config.params = { ...config.params, icode: '898F8DC30015CE9F' }
-  config.data = { ...config.data, icode: '898F8DC30015CE9F' }
   store.commit('setLoading', true)
+  config.params = { ...config.params, icode: '898F8DC30015CE9F' }
+  // config.data = { ...config.data, icode: '898F8DC30015CE9F' }
+  if (config.data instanceof FormData) {
+    config.data.append('icode', '898F8DC30015CE9F')
+  } else {
+    config.data = { ...config.data, icode: '898F8DC30015CE9F' }
+  }
+  store.commit('setLoading', false)
   store.commit('setError', { status: false, message: '' })
   return config
 })

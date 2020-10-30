@@ -1,6 +1,10 @@
 import { createStore, Commit } from 'vuex'
 import axios from 'axios'
-
+export interface ResponseType<P = {}> {
+  code: number;
+  msg: string;
+  data: P;
+}
 export interface UserProps {
   isLogin: boolean;
   nickName?: string;
@@ -8,10 +12,11 @@ export interface UserProps {
   column?: string;
   email?: string;
 }
-interface ImageProps {
+export interface ImageProps {
   _id?: string;
   url?: string;
   createdAt?: string;
+  fitUrl?: string;
 }
 export interface ColumnProps {
   _id: string;
@@ -20,12 +25,12 @@ export interface ColumnProps {
   description: string;
 }
 export interface PostProps {
-  _id: string;
+  _id?: string;
   title: string;
   excerpt?: string;
   content?: string;
   image?: ImageProps;
-  createdAt: string;
+  createdAt?: string;
   column: string;
 }
 export interface GlobalErrorProps {
@@ -33,38 +38,34 @@ export interface GlobalErrorProps {
   message?: string;
 }
 export interface GlobalDataProps {
-  error: GlobalErrorProps;
   token: string;
+  error: GlobalErrorProps;
   loading: boolean;
   columns: ColumnProps[];
   posts: PostProps[];
   user: UserProps;
 }
 const getAndCommit = async (url: string, mutationName: string, commit: Commit) => {
-  commit('setLoading', true)
   const { data } = await axios.get(url)
-  // await new Promise(resolve => setTimeout(resolve, 3000))
   commit(mutationName, data)
-  commit('setLoading', false)
+  return data
 }
 const postAndCommit = async (url: string, mutationName: string, commit: Commit, payload: any) => {
   const { data } = await axios.post(url, payload)
-  console.log(data)
-  // await new Promise(resolve => setTimeout(resolve, 3000))
   commit(mutationName, data)
   return data
 }
 const store = createStore<GlobalDataProps>({
   state: {
-    error: { status: false },
     token: localStorage.getItem('token') || '',
+    error: { status: false },
     loading: false,
     columns: [],
     posts: [],
     user: { isLogin: false }
   },
   mutations: {
-    // login (state) {
+    // login(state) {
     //   state.user = { ...state.user, isLogin: true, name: 'viking' }
     // },
     createPost (state, newPost) {
@@ -89,25 +90,29 @@ const store = createStore<GlobalDataProps>({
       state.user = { isLogin: true, ...rawData.data }
     },
     login (state, rawData) {
-      console.log(rawData)
       const { token } = rawData.data
-      state.token = rawData.data.token
+      state.token = token
       localStorage.setItem('token', token)
       axios.defaults.headers.common.Authorization = `Bearer ${token}`
+    },
+    logout (state) {
+      state.token = ''
+      localStorage.remove('token')
+      delete axios.defaults.headers.common.Authorization
     }
   },
   actions: {
     fetchColumns ({ commit }) {
-      getAndCommit('/columns', 'fetchColumns', commit)
+      return getAndCommit('/columns', 'fetchColumns', commit)
     },
     fetchColumn ({ commit }, cid) {
-      getAndCommit(`/columns/${cid}`, 'fetchColumn', commit)
+      return getAndCommit(`/columns/${cid}`, 'fetchColumn', commit)
     },
     fetchPosts ({ commit }, cid) {
-      getAndCommit(`/columns/${cid}/posts`, 'fetchPosts', commit)
+      return getAndCommit(`/columns/${cid}/posts`, 'fetchPosts', commit)
     },
     fetchCurrentUser ({ commit }) {
-      getAndCommit('/user/current', 'fetchCurrentUser', commit)
+      return getAndCommit('/user/current', 'fetchCurrentUser', commit)
     },
     login ({ commit }, payload) {
       return postAndCommit('/user/login', 'login', commit, payload)
