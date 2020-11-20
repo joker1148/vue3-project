@@ -38,6 +38,7 @@ export default defineComponent({
     Loader
   },
   setup () {
+    console.log("begin")
     const store = useStore<GlobalDataProps>()
     const isLoading = computed(() => store.state.loading)
     const currentUser = computed(() => store.state.user)
